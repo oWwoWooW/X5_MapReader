@@ -1,6 +1,6 @@
-%%%4.19¸üĞÂºó±¬ÆøÊ±¼ä»ù±¾¹Ì¶¨%%%
-%5.18Pos¸ÄÎª180
-%É¾³ıº¯ÊıÍ·ÒÔ¼°×îºóµÄEND£¬¿Éµ¥¶ÀÊ¹ÓÃ
+%%%4.19æ›´æ–°åçˆ†æ°”æ—¶é—´åŸºæœ¬å›ºå®š%%%
+%5.18Posæ”¹ä¸º180
+%åˆ é™¤å‡½æ•°å¤´ä»¥åŠæœ€åçš„ENDï¼Œå¯å•ç‹¬ä½¿ç”¨
 function a = UPDATE_4_19_Idol(addr)
 a = 0;
 %
@@ -37,7 +37,7 @@ for i = 1:size(data2, 1)
         error('Note Type Error')
     end
 end
-Total_Score_Mix(:, 1) = Total_Score_Long(:, 1) + Total_Score_Slip(:, 1) + Total_Score_Shot(:, 1);	%¸÷Àà·ÖÊıÏà¼ÓµÃ³ö×Ü·Ö   
+Total_Score_Mix(:, 1) = Total_Score_Long(:, 1) + Total_Score_Slip(:, 1) + Total_Score_Shot(:, 1);	%å„ç±»åˆ†æ•°ç›¸åŠ å¾—å‡ºæ€»åˆ†   
 
 time = floor(max(Total_Score_Long(:, 2))) + 1;
 time_hist_score_long = zeros(time, 1);
@@ -51,10 +51,10 @@ for i = 1:size(Total_Score_Long, 1)
     time_hist_score_slip(floor(Total_Score_Slip(i, 2))+1) = time_hist_score_slip(floor(Total_Score_Slip(i, 2))+1) + Total_Score_Slip(i, 1);
     time_hist_score_mix(floor(Total_Score_Mix(i, 2))+1) = time_hist_score_mix(floor(Total_Score_Mix(i, 2))+1) + Total_Score_Mix(i, 1);
 end
-time_hist_score_dist = [time_hist_score_long';time_hist_score_shot';time_hist_score_slip']; %×ª»»ÎªÍ¼±íÊı¾İ¸ñÊ½
+time_hist_score_dist = [time_hist_score_long';time_hist_score_shot';time_hist_score_slip']; %è½¬æ¢ä¸ºå›¾è¡¨æ•°æ®æ ¼å¼
 
 figure('Position', [0 0 1920 1080], 'Visible', 'off');
-subplot(2,1,1)  %Ã¿Ãënote
+subplot(2,1,1)  %æ¯ç§’note
 fg = bar(0:time-1, time_hist_score_dist', 'stacked', 'EdgeColor', 'none');
 set(fg(1),'facecolor','r')
 set(fg(2),'facecolor',[0.5 1 0.5])
@@ -66,7 +66,7 @@ title(titleq{1});
 time_stack_score = zeros(time, 3);  %|Time_Start|Time_End|Score|
 for i = 1:time
     %a = Find_Keep_Time(i-1, total_long_table_with_symbol, Stay_Time);
-    %¶ÔÓ¦4.19¸üĞÂ
+    %å¯¹åº”4.19æ›´æ–°
     time_stack_score(i, 1) = i - 1;
     time_stack_score(i, 2) = i - 1 + Stay_Time;
 end
@@ -103,9 +103,10 @@ for i = 1:size(locs, 1)
 end
 grid off
 toc
+%å­˜å‚¨ä½ç½®
 saveas(gcf,['F:\0518\Out\' titleq{1} '.jpg']);   
 
-%º¯Êı½á¹¹ÓÃ
+%å‡½æ•°ç»“æ„ç”¨
 a = 1;
 return
 end
