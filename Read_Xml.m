@@ -13,7 +13,7 @@ function status = Read_Xml(XML_file_addr)
         'IsFourTrack' 'TrackCount' 'LevelPreTime'...
         'Title' 'Artist' 'FilePath'...
         'IndicatorResetPos' };
-    % 子节点形式提取
+    % �ӽڵ���ʽ��ȡ
     % Level_Info_Node = XML_file.getElementsByTagName('LevelInfo');
     % if Level_Info_Node.getLength ~= 1
     %     error('ERROR|Level_Info_Node Not Correct');
@@ -29,7 +29,7 @@ function status = Read_Xml(XML_file_addr)
     %     end
     % end
 
-    % 直接div提取
+    % ֱ��div��ȡ
     Info_Martix_cell = cell(1, size(Info_KeyWords, 2));
     for i = 1:max(size(Info_KeyWords))
         Select_Node = XML_file.getElementsByTagName(Info_KeyWords(1, i));
@@ -55,12 +55,12 @@ function status = Read_Xml(XML_file_addr)
         'Type' 'Track' 'ID' 'Son' 'EndArea'};
     
     Not_Typ_id = find((Note_Attr_KeyWords == 'note_type') ==1);
-    End_Bar_id = find((Note_Attr_KeyWords == 'EndBar') ==1);
-    End_Pos_id = find((Note_Attr_KeyWords == 'EndPos') ==1);
-    Str_Bar_id = find((Note_Attr_KeyWords == 'Bar') ==1);
-    Str_Pos_id = find((Note_Attr_KeyWords == 'Pos') ==1);
-    End_Tra_id = find((Note_Attr_KeyWords == 'end_track') ==1);
-    Fro_Tra_id = find((Note_Attr_KeyWords == 'from_track') ==1);
+    End_Bar_id = (Note_Attr_KeyWords == 'EndBar') ==1;
+    End_Pos_id = (Note_Attr_KeyWords == 'EndPos') ==1;
+    Str_Bar_id = (Note_Attr_KeyWords == 'Bar') ==1;
+    Str_Pos_id = (Note_Attr_KeyWords == 'Pos') ==1;
+    End_Tra_id = (Note_Attr_KeyWords == 'end_track') ==1;
+    Fro_Tra_id = (Note_Attr_KeyWords == 'from_track') ==1;
     Note_Attr_number = max(size(Note_Attr_KeyWords));
     Note_Martix = cell(Note_Nodes.getLength, Note_Attr_number);
     note_available_count = 1;
@@ -97,9 +97,9 @@ function status = Read_Xml(XML_file_addr)
     %To Table
     Note_Martix_table = cell2table(Note_Martix, 'VariableNames', Note_Attr_KeyWords_cell);
     if ~isempty(find((Note_Martix_table.EndArea == "") == 0))
-        Info_Martix_table.ModeType = "PinBall";  % 待写
+        Info_Martix_table.ModeType = "PinBall";
     elseif XML_file.getElementsByTagName('ScreenPos').getLength > 2
-        Info_Martix_table.ModeType = "Bubble";. %完成
+        Info_Martix_table.ModeType = "Bubble";
         Note_Martix_table.Pos = Note_Martix_table.BeatPos; 
         Note_Martix_table.note_type = Note_Martix_table.Type;
         Note_Martix_table.EndPos(Note_Martix_table.note_type == 0) = ...
@@ -113,7 +113,7 @@ function status = Read_Xml(XML_file_addr)
         Note_Martix_table.from_track(:) = "Null";
         Note_Martix_table.target_track = Note_Martix_table.from_track;
     else
-        Info_Martix_table.ModeType = "Idol";  %完成
+        Info_Martix_table.ModeType = "Idol";
     end
     %Raw_data
     Map.Info = Info_Martix_table;
