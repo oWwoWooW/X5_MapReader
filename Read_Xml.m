@@ -56,13 +56,6 @@ function status = Read_Xml(XML_file_addr)
         'EndPos' 'end_track' 'BeatPos'...
         'Type' 'Track' 'ID' 'Son' 'EndArea'};
     
-    Not_Typ_id = find((Note_Attr_KeyWords == 'note_type') ==1);
-    End_Bar_id = find((Note_Attr_KeyWords == 'EndBar') ==1);
-    End_Pos_id = find((Note_Attr_KeyWords == 'EndPos') ==1);
-    Str_Bar_id = find((Note_Attr_KeyWords == 'Bar') ==1);
-    Str_Pos_id = find((Note_Attr_KeyWords == 'Pos') ==1);
-    End_Tra_id = find((Note_Attr_KeyWords == 'end_track') ==1);
-    Fro_Tra_id = find((Note_Attr_KeyWords == 'from_track') ==1);
     Note_Attr_number = max(size(Note_Attr_KeyWords));
     %´´½¨´æ´¢cell
     Note_Martix = cell(Note_Nodes.getLength, Note_Attr_number);
