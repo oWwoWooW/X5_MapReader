@@ -1,5 +1,18 @@
-# py部分MATLAB重写中
+# MATLAB重写完成
 # X5_MapReader
+# ----Matlab_new----
+# 介绍
+  读取XML文件，转换为TXT或直接生成图
+# 版本
+  Matlab 2017a
+# 使用
+  1.  Full.m中修改文件夹位置
+  2.  Process.m中修改部分参数
+# 注意
+  1.  未测试
+  2.  未实现秒单位的分数直方图
+  
+# ----Old----
 # 介绍
   Python:读取XML文件，转换为TXT
   Matlab：读取txt，绘图
