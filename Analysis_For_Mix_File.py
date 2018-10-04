@@ -1,9 +1,10 @@
 # coding=utf-8
 import binascii, sys, struct
+
 """For PowerShell"""
 file_addr = r'F:\0518\All_level\Bytes\idol_100003.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm']
 
 
 def read_4_bytes(data):
@@ -19,6 +20,18 @@ def read_4_bytes(data):
     # 内存值直接转int
     # buf = int(struct.unpack('i', binascii.a2b_hex(data))[0]) NotePerShow似乎是float 暂时不改动
     # return buf
+
+
+def read_int(data):
+    """Return int"""
+    buf = int(struct.unpack('i', binascii.a2b_hex(data))[0])
+    return buf
+
+
+def read_float(data):
+    """Return float"""
+    buf = float(struct.unpack('f', binascii.a2b_hex(data))[0])
+    return round(buf, 2)
 
 
 def read_note(data):
@@ -45,19 +58,19 @@ def read_note(data):
     Note_Info['Note_type'] = Note_type
 
     # Get Note Information
-    Note_Info['Start_Bar'] = read_4_bytes(buf[4 * 2:8 * 2])
-    Note_Info['Start_Pos'] = read_4_bytes(buf[8 * 2:12 * 2])
+    Note_Info['Start_Bar'] = read_int(buf[4 * 2:8 * 2])
+    Note_Info['Start_Pos'] = read_int(buf[8 * 2:12 * 2])
     if (Note_type == 'long') or (Note_type == 'shot'):
         Note_Info['From_Track'] = buf[16 * 2:18 * 2].decode('hex')
     else:
         Note_Info['From_Track'] = buf[21 * 2:23 * 2].decode('hex')
     Note_Info['Target_Track'] = buf[28 * 2:30 * 2].decode('hex')
-    Note_Info['End_Bar'] = read_4_bytes(buf[40 * 2:44 * 2])
-    Note_Info['End_Pos'] = read_4_bytes(buf[44 * 2:48 * 2])
+    Note_Info['End_Bar'] = read_int(buf[40 * 2:44 * 2])
+    Note_Info['End_Pos'] = read_int(buf[44 * 2:48 * 2])
     if Note_Info['From_Track'] != 'L1' and \
             Note_Info['From_Track'] != 'L2' and \
             Note_Info['From_Track'] != 'R1' and \
-            Note_Info['From_Track'] != 'MD' and\
+            Note_Info['From_Track'] != 'MD' and \
             Note_Info['From_Track'] != 'R2':
         raise ImportError("Note From_Track Read Error!")
     # return_data = '%s\t%d\t%d\t%d\t%d\t%s\t%s' % (Note_Info['Note_type'],
@@ -80,45 +93,40 @@ def Get_Information(hex):
     Base_Info = dict.fromkeys(Key, '')
     p = 0
     # 确认文件头
-    if hex[p:p + 17 * 2] != '0d000000586d6c49646f6c457874656e64':
+    if hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) != -1:
+        print('Map is Idol')
+        p += hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) + 'XmlIdolExtend'.encode('hex').__len__() + 2;
+    else:
         raise IOError('File_InCorrect')
         exit('ERROR_Bytes_File')
     # 跳过文件头
-    p += 18 * 2
     hex = hex.replace('Left'.encode('hex'), 'L'.encode('hex'))  # Left   ->L
     hex = hex.replace('Right'.encode('hex'), 'R'.encode('hex'))  # Right  ->R
     hex = hex.replace('short'.encode('hex'), 'shot'.encode('hex'))  # short  ->shot
-    hex = hex.replace('Middle'.encode('hex'), 'MD'.encode('hex')) # Middle ->MD
+    hex = hex.replace('Middle'.encode('hex'), 'MD'.encode('hex'))  # Middle ->MD
 
-    bpm_hex = ('%s%s%s%s') % (hex[p + 3 * 2:p + 4 * 2],
-                             hex[p + 2 * 2:p + 3 * 2],
-                             hex[p + 1 * 2:p + 2 * 2],
-                             hex[p + 0 * 2:p + 1 * 2])
-    bpm_hex = binascii.a2b_hex(bpm_hex)
-    # 内存值转float
-    bpm = float(struct.unpack('!f', bpm_hex)[0])
-    bpm = round(bpm, 2)
+    Base_Info['Bpm'] = read_float(hex[p:p + 4 * 2])
     p += 4 * 2
-    Base_Info['BeatPerBar'] = read_4_bytes(hex[p:p + 4 * 2])
-    Base_Info['BeatLen'] = read_4_bytes(hex[p + 4 * 2:p + 8 * 2])
-    Base_Info['EnterTimeAdjust'] = read_4_bytes(hex[p + 8 * 2:p + 12 * 2])
-    Base_Info['NotePreShow'] = read_4_bytes(hex[p + 12 * 2:p + 16 * 2]) # 似乎是float 待定
-    Base_Info['LevelTime'] = read_4_bytes(hex[p + 16 * 2:p + 20 * 2])
-    Base_Info['BarAmount'] = read_4_bytes(hex[p + 20 * 2:p + 24 * 2])
-    Base_Info['BeginBarLen'] = read_4_bytes(hex[p + 24 * 2:p + 28 * 2])
+    Base_Info['BeatPerBar'] = read_int(hex[p:p + 4 * 2])
+    Base_Info['BeatLen'] = read_int(hex[p + 4 * 2:p + 8 * 2])
+    Base_Info['EnterTimeAdjust'] = read_int(hex[p + 8 * 2:p + 12 * 2])
+    Base_Info['NotePreShow'] = read_float(hex[p + 12 * 2:p + 16 * 2])  # 似乎是float 待定
+    Base_Info['LevelTime'] = read_int(hex[p + 16 * 2:p + 20 * 2])
+    Base_Info['BarAmount'] = read_int(hex[p + 20 * 2:p + 24 * 2])
+    Base_Info['BeginBarLen'] = read_int(hex[p + 24 * 2:p + 28 * 2])
     if hex[p + 28 * 2:p + 29 * 2] == '01':
         Base_Info['IsFourTrack'] = True
     else:
         Base_Info['IsFourTrack'] = False
-    Base_Info['TrackCount'] = read_4_bytes(hex[p + 29 * 2:p + 33 * 2])
-    Base_Info['LevelPreTime'] = read_4_bytes(hex[p + 33 * 2:p + 37 * 2])
+    Base_Info['TrackCount'] = read_int(hex[p + 29 * 2:p + 33 * 2])
+    Base_Info['LevelPreTime'] = read_int(hex[p + 33 * 2:p + 37 * 2])
     # 定位Title开头
     if hex.find('ffffffff') != -1:
         t1 = hex.find('ffffffff') + 8 * 2
     else:
         raise ImportError('Cannot Find Title')
     # 定位Title结束 防止位数错误对2取余数
-    t2 = hex[t1:].find('00') + hex[t1:].find('00')%2
+    t2 = hex[t1:].find('00') + hex[t1:].find('00') % 2
     title = hex[t1:t1 + t2].decode('hex').decode('utf-8')
     # 查找Note串开头
     p_s = hex.find('shot'.encode('hex')) if hex.find('shot'.encode('hex')) != -1 else 100000
@@ -156,7 +164,7 @@ def Get_Information(hex):
             # print('Number:' + str(Note_List.__len__()) + ' |' + note_hex)
             hex = hex[48 * 2:]
         elif hex[0:4 * 2] == '01000000':
-            Comb_aount = read_4_bytes(hex[4 * 2:8 * 2])
+            Comb_aount = read_int(hex[4 * 2:8 * 2])
             hex = hex[8 * 2:]
             for i in range(0, Comb_aount):
                 note_hex = '00000000' + hex[0:44 * 2]
