@@ -3,9 +3,9 @@ import binascii, sys, struct
 reload(sys)
 sys.setdefaultencoding('utf8')
 """For PowerShell"""
-file_addr = r'F:\0518\All_level\Bytes\bubble_200004.xml.bytes'
+# file_addr = r'F:\0518\All_level\Bytes\bubble_200004.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title']
 
 
 def read_int(data):
@@ -21,11 +21,11 @@ def read_float(data):
 
 
 def read_note(data):
-    Note_Key = ['Note_type', 'Start_Bar', 'Start_Pos', 'From_Track', 'Target_Track', 'End_Bar', 'End_Pos',\
-                'Screen_Pos_X', 'Screen_Pos_Y', 'Fly_Track_Name', 'ID', 'MoveType', 'MoveDegree', 'FlyDegree']
+    Note_Key = ['Note_type', 'Start_Bar', 'Start_Pos', 'From_Track', 'Target_Track', 'End_Bar', 'End_Pos',
+                'Screen_Pos_X', 'Screen_Pos_Y', 'Fly_Track_Name', 'ID', 'MoveType', 'MoveDegree', 'FlyDegree',
+                'Start_Total_Pos', 'End_Total_Pos']
     Note_Info = dict.fromkeys(Note_Key, '')
     # type: (data) -> str
-    p = 0
     # Get Note Information
     buf = data
     Note_Info['Start_Bar'] = read_int(buf[0 :4 * 2])
@@ -50,13 +50,17 @@ def read_note(data):
         Note_Info['Screen_Pos_Y'] = read_int(buf[44 * 2:48 * 2])
         Note_Info['Fly_Track_Name'] = binascii.a2b_hex(buf[60 * 2:69 * 2])
         Note_Info['Screen_Pos_Y'] = read_float(buf[70 * 2:74 * 2])
+
+    # 计算TotalPos
     Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2) / 8
     End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2) / 8
+    Note_Info['Start_Total_Pos'] = Start_Total_Pos
+    Note_Info['End_Total_Pos'] = End_Total_Pos
     # return数据格式待定 与matlab对接
     return_data = '%s\t%d\t%d\t%s\t%s' % (Note_Info['Note_type'],
                                           Start_Total_Pos, End_Total_Pos,
                                           Note_Info['From_Track'], Note_Info['Target_Track'])
-    return return_data
+    return Note_Info
     # return Note_Info
 
 
@@ -72,31 +76,54 @@ def Get_Information(hex):
         raise IOError('File_InCorrect')
         exit('ERROR_Bytes_File')
 
-    # 修正关键词长度 全部指定4中文字
+    # 修正MoveTrack关键词长度 全部指定4中文字
+    # 10/05 命名过于沙雕 放弃分析
 
-    hex = hex.replace('长按V型对称'.encode('hex'), '长按对称'.encode('hex'))
-    hex = hex.replace('长按波形对称'.encode('hex'), '长按对称'.encode('hex'))
-    hex = hex.replace('滑动M型'.encode('hex'), '滑动们型'.encode('hex'))
-    hex = hex.replace('滑动M对称'.encode('hex'), '滑动对称'.encode('hex'))
-    hex = hex.replace('滑动反手弧线对称'.encode('hex'), '滑动反手'.encode('hex'))
+    hex = hex.replace('对称'.encode('hex'), '')
+    hex = hex.replace('滑动β'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动支线1.5'.encode('hex'), '滑你爷爷'.encode('hex'))
+    hex = hex.replace('长按三叶草'.encode('hex'), '长按三叶'.encode('hex'))
+    hex = hex.replace('长按尖角2拍'.encode('hex'), '长按三叶'.encode('hex'))
+    hex = hex.replace('长按Z型'.encode('hex'), '长按你爸'.encode('hex'))
+    hex = hex.replace('长按眼睛1'.encode('hex'), '长按你妈'.encode('hex'))
+    hex = hex.replace('长按弧'.encode('hex'), '长按你姐'.encode('hex'))
+    hex = hex.replace('长按你姐线'.encode('hex'), '长按你姐'.encode('hex'))
+    hex = hex.replace('滑动S型'.encode('hex'), '滑动你死'.encode('hex'))
+    hex = hex.replace('滑动Z型'.encode('hex'), '滑动你死'.encode('hex'))
+    hex = hex.replace('滑动直角型'.encode('hex'), '滑动直角'.encode('hex'))
+    hex = hex.replace('滑动直角形'.encode('hex'), '滑动直角'.encode('hex'))
+    hex = hex.replace('滑动直角边'.encode('hex'), '滑动直角'.encode('hex'))
+    hex = hex.replace('滑动M型'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动M'.encode('hex'), '滑动去世'.encode('hex'))
     hex = hex.replace('滑动反手弧线'.encode('hex'), '滑动反手'.encode('hex'))
+    hex = hex.replace('长按ILU2'.encode('hex'), '长按搞基'.encode('hex'))
     hex = hex.replace('长按ILU'.encode('hex'), '长按搞基'.encode('hex'))
     hex = hex.replace('长按S型'.encode('hex'), '长按有病'.encode('hex'))
+    hex = hex.replace('长按V型'.encode('hex'), '长按有病'.encode('hex'))
+    hex = hex.replace('长按U型'.encode('hex'), '长按有病'.encode('hex'))
+    hex = hex.replace('长按S形'.encode('hex'), '长按有病'.encode('hex'))
     hex = hex.replace('长按L型'.encode('hex'), '长按有病'.encode('hex'))
-    hex = hex.replace('滑动弧'.encode('hex'), '滑动弧对'.encode('hex'))
-    hex = hex.replace('滑动弧对对称'.encode('hex'), '滑动弧对'.encode('hex'))
-    hex = hex.replace('长按直线2'.encode('hex'), '长按直线'.encode('hex'))
-    hex = hex.replace('长按直线1.5'.encode('hex'), '长按直线'.encode('hex'))
-    hex = hex.replace('长按波浪2拍'.encode('hex'), '长按波浪'.encode('hex'))
-    hex = hex.replace('长按无限型'.encode('hex'), '长按无限'.encode('hex'))
-    hex = hex.replace('长按蝴蝶右'.encode('hex'), '长按蝴蝶'.encode('hex'))
-    hex = hex.replace('长按蝴蝶左'.encode('hex'), '长按蝴蝶'.encode('hex'))
-    hex = hex.replace('滑动1拍直线'.encode('hex'), '滑动直线'.encode('hex'))
-    hex = hex.replace('长按2拍弧线'.encode('hex'), '长按弧线'.encode('hex'))
-    hex = hex.replace('长按2拍直角'.encode('hex'), '长按直角'.encode('hex'))
-    hex = hex.replace('长按2拍弧线对称'.encode('hex'), '长按弧线'.encode('hex'))
-    hex = hex.replace('长按心电心左'.encode('hex'), '长按心电'.encode('hex'))
-    hex = hex.replace('长按心电心右'.encode('hex'), '长按心电'.encode('hex'))
+    hex = hex.replace('滑动弧'.encode('hex'), '滑动去世'.encode('hex'))
+
+    hex = hex.replace('滑动去世线'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动弧对线'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('长按直线2'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按直线1.5'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按波浪2拍'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按无限型'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按蝴蝶右'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按蝴蝶左'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('滑动1拍直线'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动2拍弧线'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动2拍曲线'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('滑动菱形3拍'.encode('hex'), '滑动去世'.encode('hex'))
+    hex = hex.replace('长按2拍弧线'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按倒L型'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按2拍直角'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按心电心左'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('长按心电心右'.encode('hex'), '长按去世'.encode('hex'))
+    hex = hex.replace('滑动直角1.5'.encode('hex'), '滑动直角'.encode('hex'))
+
 
 
     # 内存值转float
@@ -122,22 +149,23 @@ def Get_Information(hex):
         raise ImportError('Cannot Find Title')
     # 定位Title结束 防止位数错误对2取余数
     t2 = hex[t1:].find('00') + hex[t1:].find('00')%2
-    title = binascii.a2b_hex(hex[t1:t1 + t2])
+    Base_Info['Title'] = binascii.a2b_hex(hex[t1:t1 + t2])
     # 确认各Note数据类型(0->MoveTrack 1->FlyTrackONLY)
     note_type = []
+    # NoteHex存放
     Note_List = []
     p = hex.find('波浪形'.encode('hex'))
     buf = hex[p:]
     while buf.find('波浪形'.encode('hex'), '波浪形'.encode('hex').__len__()-1) != -1:
         p1 = buf.find('波浪形'.encode('hex'), '波浪形'.encode('hex').__len__()-1)
-        buf = buf[p1:]
         if p1 == 190 or p1 == 188:
             note_type.append(0)
         elif p1 == 150 or p1 == 148:
             note_type.append(1)
         else:
             # 若长度不为 190 188 150 148 则MoveTrack名字可能不为4中文
-            raise NameError('Error')
+            raise NameError('Error|Position: %i|\n%s' % (note_type.__len__(), buf[p1-140:p1]))
+        buf = buf[p1:]
     if p1 == 190 or p1 == 150:
         note_type.append(0)
     elif p1 == 188 or p1 == 148:
@@ -158,21 +186,17 @@ def Get_Information(hex):
         else:
             Note_List.append(buf[0: 148])
             buf = buf[148:]
-    print(Note_List.__len__())
     # Locate NoteType
 
     i = 0
+    # Notes总表
+    Notes_List = []
     for item in Note_List:
         try:
             Note_Box_Single = read_note(item)
-            i += 1
+            Notes_List.append(Note_Box_Single)
         except Exception as e:
-            print e
-            exit()
-    exit()
+            raise e
+    Map_out = {'Info': Base_Info, 'Notes': Notes_List}
+    return Map_out
 
-
-f = open(file_addr, 'rb+')
-a = f.read()
-hex = binascii.b2a_hex(a)  # type: str
-Get_Information(hex)
