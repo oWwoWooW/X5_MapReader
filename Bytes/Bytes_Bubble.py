@@ -5,7 +5,7 @@ sys.setdefaultencoding('utf8')
 """For PowerShell"""
 # file_addr = r'F:\0518\All_level\Bytes\bubble_200004.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title', 'Mode']
 
 
 def read_int(data):
@@ -70,6 +70,7 @@ def Get_Information(hex):
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) != -1:
         print('Map is Bubble')
+        Base_Info['Mode'] = 'Bubble'
         # 跳过文件头
         p += hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) + 'XmlBubbleExtend'.encode('hex').__len__() + 2;
     else:
@@ -186,9 +187,7 @@ def Get_Information(hex):
         else:
             Note_List.append(buf[0: 148])
             buf = buf[148:]
-    # Locate NoteType
 
-    i = 0
     # Notes总表
     Notes_List = []
     for item in Note_List:

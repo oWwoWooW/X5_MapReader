@@ -3,14 +3,14 @@ import binascii, sys, struct, re
 reload(sys)
 sys.setdefaultencoding('utf8')
 """For PowerShell"""
-file_addr = r'F:\0518\All_level\Bytes\idol_100003.xml.bytes'
+# file_addr = r'F:\0518\All_level\Bytes\idol_100003.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title', 'Mode']
 
 
 def read_4_bytes(data):
     # type: (data) -> str
-    """Read 4Bytes Return Resort Data"""
+    """旧式读取方法 废弃"""
     if not isinstance(data, str):
         raise TypeError('Data is not String')
     if data.__len__() != 8:
@@ -36,10 +36,11 @@ def read_float(data):
 
 
 def read_note(data):
-    Note_Key = ['Note_type', 'Start_Bar', 'Start_Pos', 'From_Track', 'Target_Track', 'End_Bar', 'End_Pos']
+    """输入单条NoteHex输出结果"""
+    Note_Key = ['Note_type', 'Start_Bar', 'Start_Pos', 'From_Track', 'Target_Track', 'End_Bar', 'End_Pos',
+                'Start_Total_Pos', 'End_Total_Pos']
     Note_Info = dict.fromkeys(Note_Key, '')
     # type: (data) -> str
-    """Read Note Hex Return Box"""
     if data.__len__() != 48 * 2:
         raise ImportError('Note Hex Size Is Not Correct')
     if data[0:4 * 2] != '00000000':
@@ -86,7 +87,9 @@ def read_note(data):
     return_data = '%s\t%d\t%d\t%s\t%s' % (Note_Info['Note_type'],
                                           Start_Total_Pos, End_Total_Pos,
                                           Note_Info['From_Track'], Note_Info['Target_Track'])
-    return return_data
+    Note_Info['Start_Total_Pos'] = Start_Total_Pos
+    Note_Info['End_Total_Pos'] = End_Total_Pos
+    return Note_Info
     # return Note_Info
 
 
@@ -96,6 +99,7 @@ def Get_Information(hex):
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) != -1:
         print('Map is Idol')
+        Base_Info['Mode'] = 'Idol'
         p += hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) + 'XmlIdolExtend'.encode('hex').__len__() + 2;
     else:
         raise IOError('File_InCorrect')
@@ -129,9 +133,9 @@ def Get_Information(hex):
         
     # 定位Title结束 防止位数错误对2取余数    
     t2 = hex[t1:].find('00') + hex[t1:].find('00') % 2
-    # title = hex[t1:t1 + t2].decode('hex').decode('utf-8')
     title = binascii.a2b_hex(hex[t1:t1 + t2])
-    title = re.sub(re.compile('[<>/\\|:"*,?]', re.S), "", title)
+    Base_Info['Title'] = re.sub(re.compile('[<>/\\|:"*,?]', re.S), "", title)
+
     # 查找Note串开头
     p_s = hex.find('shot'.encode('hex')) if hex.find('shot'.encode('hex')) != -1 else 100000
     p_l = hex.find('long'.encode('hex')) if hex.find('long'.encode('hex')) != -1 else 100000
@@ -184,15 +188,12 @@ def Get_Information(hex):
     else:
         raise IOError('Note Number Is Not Correct')
     # Note_List Is Done
-
-    f2 = open('C:\\Users\\0\\3D Objects\\idol\\New\\' + str(Base_Info['EnterTimeAdjust']) + '-' + title + '.txt', 'a')
-    # f2.write('Note_type\tStart_Bar\tStart_Pos\tEnd_Bar\tEnd_Pos\tFrom_Track\tTarget_Track\n')
-    f2.write('Note_type\tStart_Total_Pos\tEnd_Total_Pos\tFrom_Track\tTarget_Track\n')
     i = 0
+    Notes_List = []
     for item in Note_List:
         try:
             Note_Box_Single = read_note(item)
-            i += 1
+            Notes_List.append(Note_Box_Single)
         except IOError as e:
             print(e)
             exit()
@@ -201,13 +202,5 @@ def Get_Information(hex):
             exit()
         # print(Note_Box_Single)
         # print('State|Note: ' + str(i) + ' SUCCESS')
-        f2.write(Note_Box_Single + '\n')
-    f2.close()
-    print 'End:' + 'title'
-    exit()
-
-
-f = open(file_addr, 'rb+')
-a = f.read()
-hex = binascii.b2a_hex(a)  # type: str
-Get_Information(hex)
+    Map_out = {'Info': Base_Info, 'Notes': Notes_List}
+    return Map_out
