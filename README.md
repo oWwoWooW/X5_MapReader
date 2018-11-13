@@ -1,4 +1,4 @@
-# X5_MapReader -- 2018/10/08
+# X5_MapReader -- 2018/11/13
 ## ----Matlab_new----
 ### 介绍
   读取XML文件，转换为TXT或直接生成图
@@ -17,11 +17,13 @@
 ### 版本
   Python 2.7.14
 ### 使用
-  Full.py中指定文件夹并运行，处理不同模式请import不同文件中的Get_Information函数
+  Full.py中指定文件夹并运行，自动根据标头调用不同模式函数
 ### 注意
-  1.  更多已提取信息请检查Note_Key
+  1.  更多已提取信息请检查各函数Note_Key
   2.  Idol的Track似乎有误，未检查
-  3.  Bubble，Idol对测试集文件分割与文件保存部分均跑通，Note读取部分未完全校验正确性
+  3.  Bubble，Idol， Pinball对测试集文件分割与文件保存部分均跑通，Note读取部分未完全校验正确性
+  4.  Pinball单独两文件note分隔符与其他不同，已注释
+  5.  Pinball中作为Son的Note在Type后加X2
   
 # X5_MapReader -- 2018/04/19
 ## ----Old----
