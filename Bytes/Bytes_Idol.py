@@ -98,7 +98,7 @@ def Get_Information(hex):
     p = 0
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) != -1:
-        print('Map is Idol')
+        # print('Map is Idol')
         Base_Info['Mode'] = 'Idol'
         p += hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) + 'XmlIdolExtend'.encode('hex').__len__() + 2;
     else:

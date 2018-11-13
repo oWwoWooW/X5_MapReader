@@ -69,7 +69,7 @@ def Get_Information(hex):
     p = 0
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) != -1:
-        print('Map is Bubble')
+        # print('Map is Bubble')
         Base_Info['Mode'] = 'Bubble'
         # 跳过文件头
         p += hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) + 'XmlBubbleExtend'.encode('hex').__len__() + 2;
