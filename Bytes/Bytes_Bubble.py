@@ -5,7 +5,7 @@ sys.setdefaultencoding('utf8')
 """For PowerShell"""
 # file_addr = r'F:\0518\All_level\Bytes\bubble_200004.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title', 'Mode']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'BPM', 'Title', 'ModeType']
 
 
 def read_int(data):
@@ -52,8 +52,8 @@ def read_note(data):
         Note_Info['Screen_Pos_Y'] = read_float(buf[70 * 2:74 * 2])
 
     # 计算TotalPos
-    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2) / 8
-    End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2) / 8
+    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2)
+    End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2)
     Note_Info['Start_Total_Pos'] = Start_Total_Pos
     Note_Info['End_Total_Pos'] = End_Total_Pos
     # return数据格式待定 与matlab对接
@@ -70,7 +70,7 @@ def Get_Information(hex):
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) != -1:
         # print('Map is Bubble')
-        Base_Info['Mode'] = 'Bubble'
+        Base_Info['ModeType'] = 'Bubble'
         # 跳过文件头
         p += hex[0: 4*8 * 2].find('XmlBubbleExtend'.encode('hex')) + 'XmlBubbleExtend'.encode('hex').__len__() + 2;
     else:
@@ -128,7 +128,7 @@ def Get_Information(hex):
 
 
     # 内存值转float
-    Base_Info['Bpm'] = read_float(hex[p:p + 4 * 2])
+    Base_Info['BPM'] = read_float(hex[p:p + 4 * 2])
     p += 4 * 2
     Base_Info['BeatPerBar'] = read_int(hex[p:p + 4 * 2])
     Base_Info['BeatLen'] = read_int(hex[p + 4 * 2:p + 8 * 2])

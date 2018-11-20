@@ -47,7 +47,7 @@ function Result = Process(Map_out)
     % 遍历Note 分配Score到Pos
     % Long、Green、Blue各版本有修改
     for i = 1:max(size(Map_out.Notes.Pos))   
-        Note_type = Map_out.Notes.note_type(i);
+        Note_type = string(Map_out.Notes.note_type(i));
         Note_Start_Pos = Map_out.Notes.Pos(i);
         Note_End_Pos = Map_out.Notes.EndPos(i);
         % Idol 每个Pos加上分数
@@ -66,7 +66,7 @@ function Result = Process(Map_out)
                 Score.PinballSingle(Note_Start_Pos) = Score.PinballSingle(Note_Start_Pos) + Score_Note_PinballSingle;
             elseif Note_type == "PinballLong"
                 Score.PinballLong(Note_Start_Pos:2:Note_End_Pos) = Score.PinballLong(Note_Start_Pos:2:Note_End_Pos) + Score_Note_PinballLong;
-            elseif Note_type == "PinballSeries"
+            elseif Note_type == "PinballSeries" || Note_type == "PinballSeriesX2"
                 Score.PinballSeries(Note_Start_Pos) = Score.PinballSeries(Note_Start_Pos) + Score_Note_PinballSeries;
             elseif Note_type == "PinballSlip"
                 Score.PinballSlip(Note_Start_Pos) = Score.PinballSlip(Note_Start_Pos) + Score_Note_PinballSlip;
@@ -183,9 +183,9 @@ function Result = Process(Map_out)
     end
     grid off
     %% SAVE
-    buf_artist = regexprep(Map_out.Info.Artist, '[\\/:*?"<>|]', '');
+    buf_BgmId = regexprep(Map_out.Info.BgmId, '[\\/:*?"<>|]', '');
     buf_title = regexprep(Map_out.Info.Title, '[\\/:*?"<>|]', '');
-    buf = sprintf('F:\\OutFolder\\%s-%s-%s.jpg', Map_out.Info.ModeType, buf_title, buf_artist);
+    buf = sprintf('F:\\OutFolder\\%s-%s-%s.jpg', Map_out.Info.ModeType, buf_BgmId, buf_title);
     saveas(gcf,buf);
     fprintf('Save To:\t%s\n', buf);
     Result = 1;

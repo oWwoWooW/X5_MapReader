@@ -3,9 +3,9 @@ import binascii, sys, struct, re
 reload(sys)
 sys.setdefaultencoding('utf8')
 """For PowerShell"""
-# file_addr = r'F:\0518\All_level\Bytes\idol_100003.xml.bytes'
+# file_addr = r'D:\X5 1118\level\pinball\idol_100002.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title', 'Mode']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'BPM', 'Title', 'ModeType']
 
 
 def read_4_bytes(data):
@@ -79,11 +79,11 @@ def read_note(data):
     #                                               Note_Info['Start_Bar'], Note_Info['Start_Pos'],
     #                                               Note_Info['End_Bar'], Note_Info['End_Pos'],
     #                                               Note_Info['From_Track'], Note_Info['Target_Track'])
-    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2) / 8
+    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2)
     if (Note_Info['Note_type'] == 'shot') or Note_Info['Note_type'] == 'slip':
         End_Total_Pos = Start_Total_Pos
     else:
-        End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2) / 8
+        End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2)
     return_data = '%s\t%d\t%d\t%s\t%s' % (Note_Info['Note_type'],
                                           Start_Total_Pos, End_Total_Pos,
                                           Note_Info['From_Track'], Note_Info['Target_Track'])
@@ -99,7 +99,7 @@ def Get_Information(hex):
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) != -1:
         # print('Map is Idol')
-        Base_Info['Mode'] = 'Idol'
+        Base_Info['ModeType'] = 'Idol'
         p += hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) + 'XmlIdolExtend'.encode('hex').__len__() + 2;
     else:
         raise IOError('File_InCorrect')
@@ -110,7 +110,7 @@ def Get_Information(hex):
     hex = hex.replace('short'.encode('hex'), 'shot'.encode('hex'))  # short  ->shot
     hex = hex.replace('Middle'.encode('hex'), 'MD'.encode('hex'))  # Middle ->MD
 
-    Base_Info['Bpm'] = read_float(hex[p:p + 4 * 2])
+    Base_Info['BPM'] = read_float(hex[p:p + 4 * 2])
     p += 4 * 2
     Base_Info['BeatPerBar'] = read_int(hex[p:p + 4 * 2])
     Base_Info['BeatLen'] = read_int(hex[p + 4 * 2:p + 8 * 2])
@@ -164,7 +164,7 @@ def Get_Information(hex):
     Note_List = []
     while True:
         if hex.__len__() <= 0:
-            print('Success Spilt')
+            # print('Success Spilt')
             break
         if hex[0:4 * 2] == '00000000':
             note_hex = hex[0:48 * 2]
@@ -183,9 +183,7 @@ def Get_Information(hex):
         else:
             raise NameError('Cannot Find Start Symbol')
     # print 'Total Amount : ' + str(Total_Amount)
-    if Note_List.__len__() == Total_Amount:
-        print 'Number Correct!'
-    else:
+    if Note_List.__len__() != Total_Amount:
         raise IOError('Note Number Is Not Correct')
     # Note_List Is Done
     i = 0
@@ -204,3 +202,9 @@ def Get_Information(hex):
         # print('State|Note: ' + str(i) + ' SUCCESS')
     Map_out = {'Info': Base_Info, 'Notes': Notes_List}
     return Map_out
+
+
+# f = open(file_addr, 'rb+')
+# a = f.read()
+# hex = binascii.b2a_hex(a)
+# Get_Information(hex)

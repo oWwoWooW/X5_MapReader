@@ -4,7 +4,7 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 """For PowerShell"""
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
-       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'Bpm', 'Title', 'Mode']
+       'IsFourTrack', 'TrackCount', 'LevelPreTime', 'BPM', 'Title', 'ModeType']
 NoteType = ['PinballSingle', 'PinballSlip', 'PinballLong', 'PinballSeries']
 # NoteHex存放
 Son_List = []
@@ -57,8 +57,8 @@ def read_note(data):
                                           read_int(buf[NoteType_end + 2 + 56: NoteType_end + 2 + 64]) + 1)
 
     # 计算TotalPos
-    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2) / 8
-    End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2) / 8
+    Start_Total_Pos = ((Note_Info['Start_Bar'] - 1) * 4 * 8 + Note_Info['Start_Pos'] / 2)
+    End_Total_Pos = ((Note_Info['End_Bar'] - 1) * 4 * 8 + Note_Info['End_Pos'] / 2)
     Note_Info['Start_Total_Pos'] = Start_Total_Pos
     Note_Info['End_Total_Pos'] = End_Total_Pos
     # return数据格式待定 与matlab对接
@@ -76,14 +76,14 @@ def Get_Information(hex):
     # 确认文件头
     if hex[0: 4*8 * 2].find('XmlPinballExtend'.encode('hex')) != -1:
         # print('Map is Pinball')
-        Base_Info['Mode'] = 'Pinball'
+        Base_Info['ModeType'] = 'Pinball'
         # 跳过文件头
         p += hex[0: 4*8 * 2].find('XmlPinballExtend'.encode('hex')) + 'XmlPinballExtend'.encode('hex').__len__() + 2;
     else:
         raise IOError('File_InCorrect')
 
     # 内存值转float
-    Base_Info['Bpm'] = read_float(hex[p:p + 4 * 2])
+    Base_Info['BPM'] = read_float(hex[p:p + 4 * 2])
     p += 4 * 2
     Base_Info['BeatPerBar'] = read_int(hex[p:p + 4 * 2])
     Base_Info['BeatLen'] = read_int(hex[p + 4 * 2:p + 8 * 2])
