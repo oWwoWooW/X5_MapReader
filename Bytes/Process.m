@@ -123,7 +123,13 @@ function Result = Process(Map_out)
     for i = 1 : X_Label_Time
         % 找到对应时间段Pos上下界
         Time_table.start_pos(i) = find(Score.time >= Time_table.start_second(i), 1, 'first');
-        Time_table.end_pos(i) = find(Time_table.end_second(i) > Score.time, 1, 'last' );
+        % 防止EndPos时还未开始
+        if ~isempty(find(Time_table.end_second(i) > Score.time, 1))
+            Time_table.end_pos(i) = find(Time_table.end_second(i) > Score.time, 1, 'last' );
+        else
+            Time_table.end_pos(i) = Time_table.end_second(1)*bpm*8/60;
+        end
+        
         % Idol
         if Map_out.Info.ModeType == "Idol"
             Time_table.short(i) = sum(Score.short(Time_table.start_pos(i) : Time_table.end_pos(i)));
