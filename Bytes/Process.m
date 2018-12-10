@@ -162,7 +162,7 @@ function Result = Process(Map_out)
         Bar_hist = [Time_table.short';Time_table.long';Time_table.slip';]; %转换为图表数据格式
 
     elseif Map_out.Info.ModeType == "Pinball"  
-        Bar_hist = [Time_table.PinballSingle';Time_table.PinballLong';Time_table.PinballSeries';(Time_table.PinballSlip + Time_table.PinballSlip)'];
+        Bar_hist = [Time_table.PinballSingle';Time_table.PinballLong';Time_table.PinballSeries';(Time_table.PinballSlip + Time_table.PinballSlipX2)'];
     else
         Bar_hist = [Time_table.type_0_yellow';Time_table.type_1_green';Time_table.type_2_blue'];
     end
