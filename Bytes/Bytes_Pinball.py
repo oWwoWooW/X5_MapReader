@@ -106,7 +106,9 @@ def Get_Information(hex):
     # 定位Title结束 防止位数错误对2取余数
     t2 = hex[t1:].find('00') + hex[t1:].find('00')%2
     Base_Info['Title'] = binascii.a2b_hex(hex[t1:t1 + t2])
-
+    hexBuf = hex
+    while hex.find(binascii.b2a_hex('showtime')) != -1:
+        hex = hex[hex.find(binascii.b2a_hex('showtime')) + binascii.b2a_hex('showtime').__len__():]
     p_note_str = hex.find('4000000000000000')
     while p_note_str % 2 != 0:
         hex = hex[p_note_str+3:]
@@ -115,6 +117,8 @@ def Get_Information(hex):
             raise NameError('Error | 找不到note标头')
     p_note_str += '4000000000000000'.__len__()
     note_amount = read_int(hex[p_note_str:p_note_str+8])
+    if note_amount == 0:
+        raise  NameError('Note数为0')
     hex = hex[p_note_str+8:]
     for i in range(1, note_amount+1):
         # note分隔符为00004040
@@ -155,8 +159,8 @@ def Get_Information(hex):
     return Map_out
 
 
-# # 单文件测试部分
-# file_addr = r'F:\0518\All_level\Bytes_pinball\pinball_300544.xml.bytes'
+# 单文件测试部分
+# file_addr = r'C:\Out\Cs\assetbundles\level\pinball\pinball_300839.xml.bytes'
 # f = open(file_addr, 'rb+')
 # a = f.read()
 # hex = binascii.b2a_hex(a)  # type: str

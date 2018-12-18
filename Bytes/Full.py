@@ -7,8 +7,8 @@ from Bytes_Idol import Get_Information as getIdol
 from Bytes_Pinball import Get_Information as getPinball
 
 FileNameList = []
-Folder_addr = r'D:\X5 1118\level\pinball'
-Save_Folder_addr = 'C:/Out/'
+Folder_addr = r'C:\Out\Cs\assetbundles\level\mIX'
+Save_Folder_addr = 'C:/Out1/'
 f_log = open(Save_Folder_addr+'log.txt', 'w')
 
 for abs_dir, sub_dir, file_names in os.walk(Folder_addr):
