@@ -1,7 +1,5 @@
 # coding=utf-8
 import binascii, sys, struct
-reload(sys)
-sys.setdefaultencoding('utf8')
 """For PowerShell"""
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
        'IsFourTrack', 'TrackCount', 'LevelPreTime', 'BPM', 'Title', 'ModeType']
@@ -30,8 +28,8 @@ def read_note(data):
     # Get Note Information
     buf = data
     Note_Info['ID'] = read_int(buf[0:8])
-    NoteType_end = 16 + buf[16:].find('00') + buf[16:].find('00') % 2
-    Note_Info['Note_type'] = binascii.a2b_hex(buf[16:NoteType_end])
+    NoteType_end = 16 + buf[16:].find(b'00') + buf[16:].find(b'00') % 2
+    Note_Info['Note_type'] = binascii.a2b_hex(buf[16:NoteType_end]).decode()
     if not NoteType.__contains__(Note_Info['Note_type']):
         raise NameError('Error | Note_Type%s' % data)
     if Son_List.__contains__(Note_Info['ID']):
@@ -74,11 +72,11 @@ def Get_Information(hex):
     Note_List = []
     p = 0
     # 确认文件头
-    if hex[0: 4*8 * 2].find('XmlPinballExtend'.encode('hex')) != -1:
+    if hex[0: 4 * 8 * 2].find(binascii.hexlify(b'XmlPinballExtend')) != -1:
         # print('Map is Pinball')
         Base_Info['ModeType'] = 'Pinball'
         # 跳过文件头
-        p += hex[0: 4*8 * 2].find('XmlPinballExtend'.encode('hex')) + 'XmlPinballExtend'.encode('hex').__len__() + 2;
+        p += hex[0: 4 * 8 * 2].find(binascii.hexlify(b'XmlPinballExtend')) + binascii.hexlify(b'XmlPinballExtend').__len__() + 2
     else:
         raise IOError('File_InCorrect')
 
@@ -92,41 +90,41 @@ def Get_Information(hex):
     Base_Info['LevelTime'] = read_int(hex[p + 16 * 2:p + 20 * 2])
     Base_Info['BarAmount'] = read_int(hex[p + 20 * 2:p + 24 * 2])
     Base_Info['BeginBarLen'] = read_int(hex[p + 24 * 2:p + 28 * 2])
-    if hex[p + 28 * 2:p + 29 * 2] == '01':
+    if hex[p + 28 * 2:p + 29 * 2] == b'01':
         Base_Info['IsFourTrack'] = True
     else:
         Base_Info['IsFourTrack'] = False
     Base_Info['TrackCount'] = read_int(hex[p + 29 * 2:p + 33 * 2])
     Base_Info['LevelPreTime'] = read_int(hex[p + 33 * 2:p + 37 * 2])
     # 定位Title开头
-    if hex.find('ffffffff') != -1:
-        t1 = hex.find('ffffffff') + 8 * 2
+    if hex.find(b'ffffffff') != -1:
+        t1 = hex.find(b'ffffffff') + 8 * 2
     else:
         raise ImportError('Cannot Find Title')
     # 定位Title结束 防止位数错误对2取余数
-    t2 = hex[t1:].find('00') + hex[t1:].find('00')%2
-    Base_Info['Title'] = binascii.a2b_hex(hex[t1:t1 + t2])
+    t2 = hex[t1:].find(b'00') + hex[t1:].find(b'00') % 2
+    Base_Info['Title'] = binascii.a2b_hex(hex[t1:t1 + t2]).decode()
     hexBuf = hex
-    while hex.find(binascii.b2a_hex('showtime')) != -1:
-        hex = hex[hex.find(binascii.b2a_hex('showtime')) + binascii.b2a_hex('showtime').__len__():]
-    p_note_str = hex.find('4000000000000000')
+    while hex.find(binascii.b2a_hex(b'showtime')) != -1:
+        hex = hex[hex.find(binascii.b2a_hex(b'showtime')) + binascii.b2a_hex(b'showtime').__len__():]
+    p_note_str = hex.find(b'4000000000000000')
     while p_note_str % 2 != 0:
-        hex = hex[p_note_str+3:]
-        p_note_str = hex.find('4000000000000000')
-        if p_note_str is -1 :
+        hex = hex[p_note_str + 3:]
+        p_note_str = hex.find(b'4000000000000000')
+        if p_note_str is -1:
             raise NameError('Error | 找不到note标头')
     p_note_str += '4000000000000000'.__len__()
-    note_amount = read_int(hex[p_note_str:p_note_str+8])
+    note_amount = read_int(hex[p_note_str:p_note_str + 8])
     if note_amount == 0:
-        raise  NameError('Note数为0')
-    hex = hex[p_note_str+8:]
-    for i in range(1, note_amount+1):
+        raise NameError('Note数为0')
+    hex = hex[p_note_str + 8:]
+    for i in range(1, note_amount + 1):
         # note分隔符为00004040
         ## pinball_300583/44.xml.bytes为00008040
-        p_note_end = hex.find('00004040')
+        p_note_end = hex.find(b'00004040')
         if read_int(hex[0:8]) == i:
             Note_List.append(hex[0:p_note_end])
-            hex = hex[p_note_end+'00004040'.__len__():]
+            hex = hex[p_note_end + '00004040'.__len__():]
         else:
             raise NameError('ID不正确\t%s' % hex[0:p_note_end])
 

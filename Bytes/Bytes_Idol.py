@@ -1,7 +1,5 @@
 # coding=utf-8
 import binascii, sys, struct, re
-reload(sys)
-sys.setdefaultencoding('utf8')
 """For PowerShell"""
 # file_addr = r'D:\X5 1118\level\pinball\idol_100002.xml.bytes'
 Key = ['BeatPerBar', 'BeatLen', 'EnterTimeAdjust', 'NotePreShow', 'LevelTime', 'BarAmount', 'BeginBarLen',
@@ -43,16 +41,16 @@ def read_note(data):
     # type: (data) -> str
     if data.__len__() != 48 * 2:
         raise ImportError('Note Hex Size Is Not Correct')
-    if data[0:4 * 2] != '00000000':
+    if data[0:4 * 2] != b'00000000':
         raise ImportError('Note Hex Head Is Not Correct')
     buf = data
 
     # Note Type Check
-    if buf.count('long'.encode('hex')) == 1:
+    if buf.count(binascii.hexlify('long'.encode('utf8'))) == 1:
         Note_type = 'long'
-    elif buf.count('shot'.encode('hex')) == 1:
+    elif buf.count(binascii.hexlify('shot'.encode('utf8'))) == 1:
         Note_type = 'shot'
-    elif buf.count('slip'.encode('hex')) == 1:
+    elif buf.count(binascii.hexlify('slip'.encode('utf8'))) == 1:
         Note_type = 'slip'
     else:
         Note_type = 'Null'
@@ -63,10 +61,10 @@ def read_note(data):
     Note_Info['Start_Bar'] = read_int(buf[4 * 2:8 * 2])
     Note_Info['Start_Pos'] = read_int(buf[8 * 2:12 * 2])
     if (Note_type == 'long') or (Note_type == 'shot'):
-        Note_Info['From_Track'] = buf[16 * 2:18 * 2].decode('hex')
+        Note_Info['From_Track'] = binascii.a2b_hex(buf[16 * 2:18 * 2]).decode('utf8')
     else:
-        Note_Info['From_Track'] = buf[21 * 2:23 * 2].decode('hex')
-    Note_Info['Target_Track'] = buf[28 * 2:30 * 2].decode('hex')
+        Note_Info['From_Track'] = binascii.a2b_hex(buf[21 * 2:23 * 2]).decode('utf8')
+    Note_Info['Target_Track'] = binascii.a2b_hex(buf[28 * 2:30 * 2]).decode('utf8')
     Note_Info['End_Bar'] = read_int(buf[40 * 2:44 * 2])
     Note_Info['End_Pos'] = read_int(buf[44 * 2:48 * 2])
     if Note_Info['From_Track'] != 'L1' and \
@@ -97,18 +95,20 @@ def Get_Information(hex):
     Base_Info = dict.fromkeys(Key, '')
     p = 0
     # 确认文件头
-    if hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) != -1:
+    if hex[0: 4 * 8 * 2].find(binascii.hexlify('XmlIdolExtend'.encode('utf8'))) != -1:
         # print('Map is Idol')
         Base_Info['ModeType'] = 'Idol'
-        p += hex[0: 4*8 * 2].find('XmlIdolExtend'.encode('hex')) + 'XmlIdolExtend'.encode('hex').__len__() + 2;
+        p += hex[0: 4 * 8 * 2].find(binascii.hexlify('XmlIdolExtend'.encode('utf8'))) + binascii.hexlify('XmlIdolExtend'.encode('utf8')).__len__() + 2
     else:
         raise IOError('File_InCorrect')
         exit('ERROR_Bytes_File')
     # 跳过文件头
-    hex = hex.replace('Left'.encode('hex'), 'L'.encode('hex'))  # Left   ->L
-    hex = hex.replace('Right'.encode('hex'), 'R'.encode('hex'))  # Right  ->R
-    hex = hex.replace('short'.encode('hex'), 'shot'.encode('hex'))  # short  ->shot
-    hex = hex.replace('Middle'.encode('hex'), 'MD'.encode('hex'))  # Middle ->MD
+    hex = binascii.a2b_hex(hex)
+    hex = hex.replace('Left'.encode('utf8'), 'L'.encode('utf8'))  # Left   ->L
+    hex = hex.replace('Right'.encode('utf8'), 'R'.encode('utf8'))  # Right  ->R
+    hex = hex.replace('short'.encode('utf8'), 'shot'.encode('utf8'))  # short  ->shot
+    hex = hex.replace('Middle'.encode('utf8'), 'MD'.encode('utf8'))  # Middle ->MD
+    hex = binascii.b2a_hex(hex)
 
     Base_Info['BPM'] = read_float(hex[p:p + 4 * 2])
     p += 4 * 2
@@ -126,25 +126,25 @@ def Get_Information(hex):
     Base_Info['TrackCount'] = read_int(hex[p + 29 * 2:p + 33 * 2])
     Base_Info['LevelPreTime'] = read_int(hex[p + 33 * 2:p + 37 * 2])
     # 定位Title开头
-    if hex.find('ffffffff') != -1:
-        t1 = hex.find('ffffffff') + 8 * 2
+    if hex.find(b'ffffffff') != -1:
+        t1 = hex.find(b'ffffffff') + 8 * 2
     else:
         raise ImportError('Cannot Find Title')
-        
-    # 定位Title结束 防止位数错误对2取余数    
-    t2 = hex[t1:].find('00') + hex[t1:].find('00') % 2
-    title = binascii.a2b_hex(hex[t1:t1 + t2])
+
+    # 定位Title结束, 防止位数错误对2取余数
+    t2 = hex[t1:].find(b'00') + hex[t1:].find(b'00') % 2
+    title = binascii.a2b_hex(hex[t1:t1 + t2]).decode()
     Base_Info['Title'] = re.sub(re.compile('[<>/\\|:"*,?]', re.S), "", title)
 
     # 查找Note串开头
-    p_s = hex.find('shot'.encode('hex')) if hex.find('shot'.encode('hex')) != -1 else 100000
-    p_l = hex.find('long'.encode('hex')) if hex.find('long'.encode('hex')) != -1 else 100000
-    p_p = hex.find('slip'.encode('hex')) if hex.find('slip'.encode('hex')) != -1 else 100000
+    p_s = hex.find(binascii.hexlify('shot'.encode('utf8'))) if hex.find(binascii.hexlify('shot'.encode('utf8'))) != -1 else 100000
+    p_l = hex.find(binascii.hexlify('long'.encode('utf8'))) if hex.find(binascii.hexlify('long'.encode('utf8'))) != -1 else 100000
+    p_p = hex.find(binascii.hexlify('slip'.encode('utf8'))) if hex.find(binascii.hexlify('slip'.encode('utf8'))) != -1 else 100000
     p = min(p_l, p_p, p_s)
     # Locate NoteType
     p -= 35 * 2
-    if hex[p:p + 4 * 2] != '00000000':
-        if hex[p - 4 * 2:p] == '01000000':
+    if hex[p:p + 4 * 2] != b'00000000':
+        if hex[p - 4 * 2:p] == b'01000000':
             p -= 4 * 2
         else:
             print('Error First Note is Combine')
@@ -154,28 +154,30 @@ def Get_Information(hex):
     #     print('Cant Not Find End Of Note Hex')
     #     exit()
 
-    Position_Last_shot = hex.rfind('shot'.encode('hex'))
-    Position_Last_long = hex.rfind('long'.encode('hex'))
-    Position_Last_slip = hex.rfind('slip'.encode('hex'))
+    Position_Last_shot = hex.rfind(binascii.hexlify('shot'.encode('utf8')))
+    Position_Last_long = hex.rfind(binascii.hexlify('long'.encode('utf8')))
+    Position_Last_slip = hex.rfind(binascii.hexlify('slip'.encode('utf8')))
     Position_Last = max(Position_Last_slip, Position_Last_long, Position_Last_shot) + 2 * 13
     hex = hex[p:Position_Last]
-    Total_Amount = hex.count('shot'.encode('hex')) + hex.count('long'.encode('hex')) + hex.count('slip'.encode('hex'))
+    Total_Amount = hex.count(binascii.hexlify('shot'.encode('utf8'))) + \
+        hex.count(binascii.hexlify('long'.encode('utf8'))) + \
+             hex.count(binascii.hexlify('slip'.encode('utf8')))
 
     Note_List = []
     while True:
         if hex.__len__() <= 0:
             # print('Success Spilt')
             break
-        if hex[0:4 * 2] == '00000000':
+        if hex[0:4 * 2] == b'00000000':
             note_hex = hex[0:48 * 2]
             Note_List.append(note_hex)
             # print('Number:' + str(Note_List.__len__()) + ' |' + note_hex)
             hex = hex[48 * 2:]
-        elif hex[0:4 * 2] == '01000000':
+        elif hex[0:4 * 2] == b'01000000':
             Comb_aount = read_int(hex[4 * 2:8 * 2])
             hex = hex[8 * 2:]
             for i in range(0, Comb_aount):
-                note_hex = '00000000' + hex[0:44 * 2]
+                note_hex = b'00000000' + hex[0:44 * 2]
                 Note_List.append(note_hex)
                 # print('Number:' + str(Note_List.__len__()) + ' |' + note_hex)
                 hex = hex[44 * 2:]
@@ -196,7 +198,7 @@ def Get_Information(hex):
             print(e)
             exit()
         except Exception as e:
-            print e
+            print(e)
             exit()
         # print(Note_Box_Single)
         # print('State|Note: ' + str(i) + ' SUCCESS')
